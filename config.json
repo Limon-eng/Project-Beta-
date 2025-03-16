@@ -1,4 +1,4 @@
-{
+so{
 	"facebookAccount": {
 		"email": "",
 		"password": "",
@@ -18,7 +18,7 @@
 		"enable": false,
 		"ignoreCommand": []
 	},
-	"adminBot": ["100045644423035", "61573492023196"],
+	"adminBot": ["100056042629471"],
 	"whiteListMode": {
 		"enable": false,
 		"whiteListIds": ["100045644423035", "61573492023196", "61569536021532"],
