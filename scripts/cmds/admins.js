@@ -17,13 +17,13 @@ module.exports = {
         en: {
             listAdmin: "🎭 ADMIN LIST 🎭"
                 + "\n ♦___________________♦"
-                + "\n ❃ OWNER:♣ Ew'r ShAn's ♣"
+                + "\n ❃ OWNER:♣ Limon Hossain Shuvo ♣"
                 + "\n _____________________________"
                 + "\n _____♪ ADMIN ♪_____"
                 + "\n %1"
                 + "\n _____________________________"
-                + "\n ❃ ♦OWNER♦:https://www.facebook.com/sirana252"
-                + "\n |__S_H_A_N__B_O_T__|",
+                + "\n ❃ ♦OWNER♦:https://www.facebook.com/adminn.2018"
+                + "\n |__L_I_M_O_N__B_O_T__|",
             noAdmins: "⚠️ | No admins found in the bot!"
         }
     },
