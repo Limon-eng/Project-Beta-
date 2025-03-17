@@ -196,7 +196,7 @@ module.exports.onChat = async ({ api, event }) => {
                      
   const userInput = body.toLowerCase().trim();
 
-  const keywords = ["bby", "limon", "shuvo", "hii", "baby", "bot", "বট", "robot"];
+  const keywords = ["bby", "limon er bou", "mohua", "hii", "baby", "bot", "বট", "robot"];
 
   if (keywords.some((keyword) => userInput.startsWith(keyword))) {
     const isQuestion = userInput.split(" ").length > 1;
