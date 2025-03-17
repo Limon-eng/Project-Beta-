@@ -192,7 +192,8 @@ module.exports.onStart = async ({ api, event, args }) => {
 module.exports.onChat = async ({ api, event }) => {
   const { threadID, messageID, body, senderID } = event;
 
-  const cMessages = ["🎀 Hello bby!", "🎀 Hi there!", "🎀 Hey! How can I help?😝"];
+  const cMessages = ["🎀 Hello bby!", "🎀 Hi there!", "🎀 Janu😘, eto bby bby koro kno, amar owner re dakte paro nah 😒,Owner id:https://www.facebook.com/share/15HS6iPVdF/"]; 
+                     
   const userInput = body.toLowerCase().trim();
 
   const keywords = ["bby", "limon", "shuvo", "hii", "baby", "bot", "বট", "robot"];
