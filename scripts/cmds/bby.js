@@ -192,7 +192,7 @@ module.exports.onStart = async ({ api, event, args }) => {
 module.exports.onChat = async ({ api, event }) => {
   const { threadID, messageID, body, senderID } = event;
 
-  const cMessages = ["🎀 Hello bby!", "🎀 Hi there!", "🎀 Janu😘, eto bby bby koro kno, amar owner re dakte paro nah 😒,Owner id:https://www.facebook.com/adminn.2018"]; 
+  const cMessages = ["🎀 Hello bby!", "🎀 Hi there!", "🎀 eto bby bby koro kno😾 amar nam MOHUA🌸, AMI LIMON ER BEFI💖😻"]; 
                      
   const userInput = body.toLowerCase().trim();
 
