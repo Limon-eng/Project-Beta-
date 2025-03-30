@@ -18,7 +18,7 @@ module.exports = {
 		try {
 			const ownerInfo = {
 				name: 'Limon Hossain Shuvo',
-				gender: '𝑴𝒂𝑳𝒆',
+				gender: '𝑴a𝑳𝒆',
 				Birthday: '13-10-𝟐𝟎𝟎7',
 				religion: '𝙄𝒔𝒍𝑨𝒎',
 				hobby: '𝑺𝒍𝒆𝒆𝑷𝒊𝒏𝑮',
