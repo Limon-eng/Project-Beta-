@@ -34,7 +34,7 @@ module.exports = {
 			errorRefreshUserTarget: "❌ | Đã xảy ra lỗi không thể làm mới thông tin người dùng %1"
 		},
 		en: {
-			refreshMyThreadSuccess: "✅ | Refresh information of your group chat successfully!",
+			refreshMyThreadSuccess: "✅ | গ্রপটারে ভালোভাবেই রিফ্রেশ করে দিসি🌝✌🏻 বুজলা প্রিয়😘!",
 			refreshThreadTargetSuccess: "✅ | Refresh information of group chat %1 successfully!",
 			errorRefreshMyThread: "❌ | Error when refresh information of your group chat",
 			errorRefreshThreadTarget: "❌ | Error when refresh information of group chat %1",
