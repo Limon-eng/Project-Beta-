@@ -27,7 +27,7 @@ module.exports = {
 				Height: '5"10'
 			};
 
-			const bold = 'https://imgur.com/8sgLnC6.mp4';
+			const bold = 'https://drive.google.com/uc?export=download&id=1Hy9SmvIJzU5aXbjjGTlEUwCihOWIj6Fk';
 			const tmpFolderPath = path.join(__dirname, 'tmp');
 
 			if (!fs.existsSync(tmpFolderPath)) {
