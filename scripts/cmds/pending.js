@@ -48,12 +48,12 @@ module.exports = {
 
       try {
         await api.sendMessage(
-          `✅ Group has been Successfully Approved by ShAn!\n\n📜 Type ${global.GoatBot.config.prefix}help to See Cmds!`,
+          `✅ Group has been Successfully Approved by Limon!\n\n📜 Type ${global.GoatBot.config.prefix}help to See Cmds!`,
           group.threadID
         );
 
         await api.changeNickname(
-          `${global.GoatBot.config.nickNameBot || "🦋𝙔𝙤𝙤 𝙔𝙤𝙤 𝗦𝗵𝗔𝗻✨"}`,
+          `${global.GoatBot.config.nickNameBot || "Limon's Janu"}`,
           group.threadID,
           api.getCurrentUserID()
         );
@@ -116,7 +116,7 @@ module.exports = {
         index++;
       }
 
-      msg += `🦋 𝗦𝗵𝗔𝗻 please Reply with the correct group number to approve!\n`;
+      msg += `🦋 Limon please bolo na 😫 kon bolod er gc re approve diba😘!\n`;
       msg += `✨ Reply with "c" to Cancel.\n`;
 
       return api.sendMessage(
