@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const baseApiUrl = async () => {
 	const base = await axios.get(
-`https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`
+`https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json`
 	);
 	return base.data.api;
 };
@@ -11,7 +11,6 @@ const baseApiUrl = async () => {
 module.exports = {
 	config: {
 		name: "ytb",
-		aliases:["sings"],
 		version: "1.1.4",
 		aliases: ['youtube'],
 		author: "dipto",
@@ -157,4 +156,4 @@ async function diptoSt(url,pathName) {
 	catch (err) {
 		throw err;
 	}
-			}
+		}
