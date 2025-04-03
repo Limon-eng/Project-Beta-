@@ -1,85 +1,124 @@
 const axios = require("axios");
-const fs = require("fs-extra");
-const tinyurl = require("tinyurl");
-const baseApiUrl = async () => {
-  const base = await axios.get(`https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json`);
-  return base.data.api;
+
+const dApi = async () => {
+  const base = await axios.get("https://raw.githubusercontent.com/nazrul4x/Noobs/main/Apis.json");
+  return base.data.alldl;
 };
 
-const config = {
-  name: "autodl",
+module.exports.config = {
+  name: "downloadv",
+  aliases: ["dn", "aon", "aoff"],  // Add aliases here
   version: "2.0",
-  author: "Dipto",
-  credits: "Dipto",
-  description: "Auto download video from tiktok, facebook, Instagram, YouTube, and more",
+  author: "Limon",
+  role: 0,
+  description: "Automatically download videos from supported platforms!",
   category: "media",
-  commandCategory: "media",
-  usePrefix: true,
-  prefix: true,
-  dependencies: {
-    "tinyurl": "",
-    "fs-extra": "",
+  countDown: 5,
+  guide: {
+    en: "Send a valid video link from supported platforms (TikTok, Facebook, YouTube, Twitter, Instagram, etc.), and the bot will download it automatically.\n/downloadv {link} - Download video\n/dn {link} - Short command to download video\n/aon - Turn auto download mode on\n/aoff - Turn auto download mode off",
   },
 };
 
-const onStart = () => {};
-const onChat = async ({ api, event }) => {
-  let dipto = event.body ? event.body : "", ex, cp;
-  try {
-    if (
-      dipto.startsWith("https://vt.tiktok.com") ||
-      dipto.startsWith("https://www.tiktok.com/") ||
-      dipto.startsWith("https://www.facebook.com") ||
-      dipto.startsWith("https://www.instagram.com/") ||
-      dipto.startsWith("https://youtu.be/") ||
-      dipto.startsWith("https://youtube.com/") ||
-      dipto.startsWith("https://x.com/") ||
-      dipto.startsWith("https://youtube.com/")
-|| dipto.startsWith("https://www.instagram.com/p/") ||
-      dipto.startsWith("https://pin.it/") ||
-      dipto.startsWith("https://twitter.com/") ||
-      dipto.startsWith("https://vm.tiktok.com") ||
-      dipto.startsWith("https://fb.watch")
-    ) {
-      api.setMessageReaction("⌛", event.messageID, true);
-      const w = await api.sendMessage("Wait Bby <😘", event.threadID);
-      const response = await axios.get(`${await baseApiUrl()}/alldl?url=${encodeURIComponent(dipto)}`);
-      const d = response.data;
-      if (d.result.includes(".jpg")) {
-        ex = ".jpg";
-        cp = "Here's your Photo <😘";
-      } else if (d.result.includes(".png")) {
-        ex = ".png";
-        cp = "Here's your Photo <😘";
-      } else if (d.result.includes(".jpeg")) {
-        ex = ".jpeg";
-        cp = "Here's your Photo <😘";
-      } else {
-        ex = ".mp4";
-        cp = d.cp;
-      }
-      const path = __dirname + `/cache/video${ex}`;
-      fs.writeFileSync(path, Buffer.from((await axios.get(d.result, { responseType: "arraybuffer" })).data, "binary"));
-      const shortUrl = await tinyurl.shorten(d.result);
-      api.setMessageReaction("✅", event.messageID, true);
-      api.unsendMessage(w.messageID);
-      await api.sendMessage({
-          body: `${d.cp || null}\n✅ | Link: ${shortUrl || null}`,
-          attachment: fs.createReadStream(path),
-        }, event.threadID, () => fs.unlinkSync(path), event.messageID
-      )
+const autoDownloadEnabled = new Map();
+
+module.exports.onStart = async ({ message, args, event, api }) => {
+  const { threadID, messageID } = event;
+  
+  // Get the command used
+  const command = event.body.split(" ")[0].toLowerCase().substring(1);
+  
+  // Handle command aliases based on command used
+  if (command === "aon") {
+    autoDownloadEnabled.set(threadID, true);
+    return api.sendMessage("✅ Auto download mode turned ON", threadID, messageID);
+  }
+  
+  if (command === "aoff") {
+    autoDownloadEnabled.delete(threadID);
+    return api.sendMessage("❌ Auto download mode turned OFF", threadID, messageID);
+  }
+  
+  // If the command is specifically dn, handle it
+  if (command === "dn") {
+    let url = args[0];
+    if (!url && event.type === "message_reply" && event.messageReply.body) {
+      const urlMatch = event.messageReply.body.match(/https?:\/\/[^\s]+/);
+      if (urlMatch) url = urlMatch[0];
     }
-  } catch (err) {
-    api.setMessageReaction("❌", event.messageID, true);
-    console.log(err);
-    api.sendMessage(`Error: ${err.message}`, event.threadID, event.messageID);
+    if (!url) {
+      return api.sendMessage("❓ Please provide a valid URL to download", threadID, messageID);
+    }
+    return handleDownload(url, api, threadID, messageID);
+  }
+  
+  // Default behavior for downloadv command
+  let url = args[0];
+  if (!url && event.type === "message_reply" && event.messageReply.body) {
+    const urlMatch = event.messageReply.body.match(/https?:\/\/[^\s]+/);
+    if (urlMatch) url = urlMatch[0];
+  }
+  if (!url) {
+    return api.sendMessage("❓ Please provide a valid URL to download", threadID, messageID);
+  }
+  return handleDownload(url, api, threadID, messageID);
+};
+
+const platforms = {
+  TikTok: { regex: /(?:https?:\/\/)?(?:www\.)?tiktok\.com/, endpoint: "/nazrul/tikDL?url=" },
+  Facebook: { regex: /(?:https?:\/\/)?(?:www\.)?(facebook\.com|fb\.watch|facebook\.com\/share\/v)/, endpoint: "/nazrul/fbDL?url=" },
+  YouTube: { regex: /(?:https?:\/\/)?(?:www\.)?(youtube\.com|youtu\.be)/, endpoint: "/nazrul/ytDL?uri=" },
+  Twitter: { regex: /(?:https?:\/\/)?(?:www\.)?x\.com/, endpoint: "/nazrul/alldl?url=" },
+  Instagram: { regex: /(?:https?:\/\/)?(?:www\.)?instagram\.com/, endpoint: "/nazrul/instaDL?url=" },
+};
+
+const detectPlatform = (url) => {
+  for (const [platform, data] of Object.entries(platforms)) {
+    if (data.regex.test(url)) {
+      return { platform, endpoint: data.endpoint };
+    }
+  }
+  return null;
+};
+
+const downloadVideo = async (apiUrl, url) => {
+  const match = detectPlatform(url);
+  if (!match) throw new Error("No matching platform for the provided URL.");
+  const { platform, endpoint } = match;
+  const endpointUrl = `${apiUrl}${endpoint}${encodeURIComponent(url)}`;
+  console.log(`🔗 Fetching from: ${endpointUrl}`);
+  try {
+    const res = await axios.get(endpointUrl);
+    console.log(`✅ API Response:`, res.data);
+    const videoUrl = res.data?.videos?.[0]?.url || res.data?.url;
+    if (videoUrl) return { downloadUrl: videoUrl, platform };
+  } catch (error) {
+    console.error(`❌ Error fetching data from ${endpointUrl}:`, error.message);
+    throw new Error("Download link not found.");
+  }
+  throw new Error("No video URL found in the API response.");
+};
+
+const handleDownload = async (url, api, threadID, messageID) => {
+  const platformMatch = detectPlatform(url);
+  if (!platformMatch) {
+    api.setMessageReaction("❌", messageID, () => {}, true);
+    return api.sendMessage("❌ Unsupported platform. Please use a link from TikTok, Facebook, YouTube, Twitter, or Instagram.", threadID, messageID);
+  }
+  try {
+    await downloadAndSend(url, api, threadID, messageID);
+  } catch (error) {
+    console.error(`❌ Error while processing the URL:`, error.message);
+    api.setMessageReaction("❌", messageID, () => {}, true);
+    api.sendMessage(`❌ Failed to download: ${error.message}`, threadID, messageID);
   }
 };
 
-module.exports = {
-  config,
-  onChat,
-  onStart,
-  run: onStart,
-  handleEvent: onChat,
-};
+const downloadAndSend = async (url, api, threadID, messageID) => {
+  try {
+    const apiUrl = await dApi();
+    api.setMessageReaction("⏳", messageID, () => {}, true);
+    const { downloadUrl, platform } = await downloadVideo(apiUrl, url);
+    const videoStream = await axios.get(downloadUrl, { responseType: "stream" });
+    api.sendMessage({ body: `✅ Downloaded From ${platform}`, attachment: [videoStream.data] }, threadID, messageID);
+    api.setMessageReaction("✅", messageID, () => {}, true);
+      }
