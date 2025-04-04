@@ -1,82 +1,69 @@
-const models = [
-  'DreamShaper',
-  'MBBXL_Ultimate',
-  'Mysterious',
-  'Copax_TimeLessXL',
-  'Pixel_Art_XL',
-  'ProtoVision_XL',
-  'SDXL_Niji',
-  'CounterfeitXL',
-  'DucHaiten_AIart_SDXL'
-];
-
 module.exports = {
-  config: {
-    name: "gen",
-    version: "1.0",
-    author: "RedWan×MAHI×Sanam",
-    countDown: 5,
-    role: 0,
-    longDescription: {
-      vi: "",
-      en: "Get images from text.",
-    },
-    category: "Image~Create",
-    guide: {
-      vi: "",
-      en: "Type {pn} with your prompts | (model name)\nHere are the Supported models:\n" + models.map((item, index) => `${index + 1}. ${item}`).join('\n'),
-    },
-  },
+		config: {
+				name: "generate",
+                                aliases:["gen"],
+				version: "1.0.0",
+				role: 0,
+				author: "limon",
+				shortDescription: "Generate image",
+				countDown: 0,
+				category: "image",
+				guide: {
+						en: '{p}gen [prompt]'
+				}
+		},
 
-  onStart: async function ({ api, args, message, event }) {
-    try {
-      const text = args.join(" ");
-      if (!text) {
-        return message.reply("Please provide a prompt.");
-      }
+		onStart: async function ({ api, event, args }) {
+				const axios = require('axios');
+				const fs = require('fs');
+				const { Prodia } = require("prodia.js");
 
-      let prompt, model;
-      if (text.includes("|")) {
-        const [promptText, modelText] = text.split("|").map((str) => str.trim());
-        prompt = promptText;
-        model = modelText;
+				let t = args.join(" ");
+				if (!t) return api.sendMessage('Missing prompt!', event.threadID, event.messageID);
+				api.sendMessage('Processing request...', event.threadID, event.messageID);
 
-        const modelNumber = parseInt(model);
-        if (modelNumber >= 1 && modelNumber <= 9) {
-          const modelNames = [
-            'DreamShaper',
-            'MBBXL_Ultimate',
-            'Mysterious',
-            'Copax_TimeLessXL',
-            'Pixel_Art_XL',
-            'ProtoVision_XL',
-            'SDXL_Niji',
-            'CounterfeitXL',
-            'DucHaiten_AIart_SDXL'
-          ];
-          model = modelNames[modelNumber - 1];
-        } else {
-          return message.reply("Invalid model number. Supported models are:\n" + models.map((item, index) => `${index + 1}. ${item}`).join('\n'));
-        }
-      } else {
-        prompt = text;
-        model = "DreamShaper";
-      }
+				try {
+						const prodia = new Prodia("70b8b086-24d8-4b14-b870-39efe453e5d3");
+						const bestModel = ["absolutereality_V16.safetensors [37db0fc3]", "absolutereality_v181.safetensors [3d9d4d2b]", "amIReal_V41.safetensors [0a8a2e61]", "ICantBelieveItsNotPhotography_seco.safetensors [4e7a3dfd]"];
+						let url = [];
+						let image = [];
 
-      let id;
-      api.setMessageReaction("⏳", event.messageID, () => {}, true);
-      const waitingMessage = await message.reply("✅ | Creating your Imagination...");
+						for (let i of bestModel) {
+								const generate = await prodia.generateImage({
+										prompt: t,
+										model: i,
+										negative_prompt: "BadDream, (UnrealisticDream:1.3)",
+										sampler: "DPM++ SDE Karras",
+										cfg_scale: 9,
+										steps: 30,
+										aspect_ratio: "portrait"
+								});
 
-      const API = `https://www.api.vyturex.com/curios?prompt=${encodeURIComponent(prompt)}&modelType=${model}`;
-      const imageStream = await global.utils.getStreamFromURL(API);
+								while (generate.status !== "succeeded" && generate.status !== "failed") {
+										await new Promise(resolve => setTimeout(resolve, 250));
+										const job = await prodia.getJob(generate.job);
 
-      await message.reply({
-        attachment: imageStream,
-      });
-      api.setMessageReaction("✅", event.messageID, () => {}, true);
-      await api.unsendMessage(waitingMessage.messageID);
-    } catch (error) {
-      message.reply("Your prompt is blocked. Try again later with another prompt. [ Tor Mayre Chudi REDWAN/ MAHI  Othoba Sanam Er Permission Nicos? ]");
-    }
-  },
+										if (job.status === "succeeded") {
+												url.push(job.imageUrl);
+												break;
+										}
+								}
+						}
+
+						let c = 0;
+						for (let urls of url) {
+								c += 1;
+								const pathh = __dirname + "/cache/generated-" + c + ".png";
+								const response = await axios.get(urls, { responseType: "arraybuffer" });
+								fs.writeFileSync(pathh, Buffer.from(response.data, "binary"));
+								image.push(fs.createReadStream(pathh));
+						}
+
+						console.log('Downloaded');
+						return api.sendMessage({ body: "Here's the results", attachment: image }, event.threadID, event.messageID);
+				} catch (e) {
+						console.error("Error generating image:", e.message);
+						return api.sendMessage(e.message, event.threadID, event.messageID);
+				}
+		}
 };
